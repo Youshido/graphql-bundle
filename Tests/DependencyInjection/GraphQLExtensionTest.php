@@ -9,8 +9,8 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
-use Youshido\GraphQLBundle\DependencyInjection\Compiler\GraphQlCompilerPass;
-use Youshido\GraphQLBundle\DependencyInjection\GraphQLExtension;
+use Youshido\GraphQLBundle\src\DependencyInjection\Compiler\GraphQlCompilerPass;
+use Youshido\GraphQLBundle\src\DependencyInjection\GraphQLExtension;
 
 class GraphQLExtensionTest extends \PHPUnit_Framework_TestCase
 {
