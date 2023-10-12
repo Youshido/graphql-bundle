@@ -1,6 +1,6 @@
 {
   "name": "youshido/graphql-bundle",
-  "description": "Symfony GraphQl Bundle",
+  "description": "Symfony GraphQl Bundle for Symfony 6+",
   "license": "MIT",
   "authors": [
     {
@@ -10,6 +10,10 @@
     {
       "name": "Alexandr Viniychuk",
       "email": "a@viniychuk.com"
+    },
+    {
+      "name": "Tom Atom",
+      "email": "tom@tomatom.com"
     }
   ],
   "autoload": {
@@ -17,13 +21,19 @@
       "Youshido\\GraphQLBundle\\": ""
     }
   },
+  "repositories": [
+    {
+      "url": "https://github.com/TomAtomCZ/GraphQL.git",
+      "type": "vcs"
+    }
+  ],
   "require": {
-    "php": ">=5.6",
-    "youshido/graphql": "~1.4"
+    "php": ">=8.1",
+    "youshido/graphql": "dev-master"
   },
   "require-dev": {
-    "phpunit/phpunit": "~4.7",
-    "composer/composer": "~1.2",
-    "symfony/framework-bundle": "~2.7|~3.0"
+    "phpunit/phpunit": "10.*",
+    "composer/composer": "2.*",
+    "symfony/framework-bundle": "6.*"
   }
 }
