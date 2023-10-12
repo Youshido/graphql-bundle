@@ -2,6 +2,8 @@
 
 namespace Youshido\GraphQLBundle\DependencyInjection\Compiler;
 
+use Exception;
+use RuntimeException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
@@ -18,11 +20,10 @@ class GraphQlCompilerPass implements CompilerPassInterface
     /**
      * You can modify the container here before it is dumped to PHP code.
      *
-     * @param ContainerBuilder $container
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function process(ContainerBuilder $container)
+    public function process(ContainerBuilder $container): void
     {
         if ($loggerAlias = $container->getParameter('graphql.logger')) {
             if (strpos($loggerAlias, '@') === 0) {
@@ -30,7 +31,7 @@ class GraphQlCompilerPass implements CompilerPassInterface
             }
 
             if (!$container->has($loggerAlias)) {
-                throw new \RuntimeException(sprintf('Logger "%s" not found', $loggerAlias));
+                throw new RuntimeException(sprintf('Logger "%s" not found', $loggerAlias));
             }
 
             $container->getDefinition('graphql.processor')->addMethodCall('setLogger', [new Reference($loggerAlias)]);
@@ -44,19 +45,17 @@ class GraphQlCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param ContainerBuilder $container
-     *
-     * @throws \Exception
+     * @throws Exception
      */
-    private function processSecurityGuard(ContainerBuilder $container)
+    private function processSecurityGuard(ContainerBuilder $container): void
     {
         $guardConfig = $container->getParameter('graphql.security.guard_config');
-        $whiteList   = $container->getParameter('graphql.security.white_list');
-        $blackList   = $container->getParameter('graphql.security.black_list');
+        $whiteList = $container->getParameter('graphql.security.white_list');
+        $blackList = $container->getParameter('graphql.security.black_list');
 
         if ((!$guardConfig['field'] && !$guardConfig['operation']) && ($whiteList || $blackList)) {
             if ($whiteList && $blackList) {
-                throw new \RuntimeException('Configuration error: Only one white or black list allowed');
+                throw new RuntimeException('Configuration error: Only one white or black list allowed');
             }
 
             $this->addListVoter($container, BlacklistVoter::class, $blackList);
@@ -65,15 +64,13 @@ class GraphQlCompilerPass implements CompilerPassInterface
     }
 
     /**
-     * @param ContainerBuilder $container
      * @param                  $voterClass
-     * @param array            $list
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    private function addListVoter(ContainerBuilder $container, $voterClass, array $list)
+    private function addListVoter(ContainerBuilder $container, ?string $voterClass, array $list): void
     {
-        if ($list) {
+        if ($list !== []) {
             $container
                 ->getDefinition('graphql.security.voter')
                 ->setClass($voterClass)
@@ -82,7 +79,7 @@ class GraphQlCompilerPass implements CompilerPassInterface
 
             $container->setParameter('graphql.security.guard_config', [
                 'operation' => true,
-                'field'     => false,
+                'field' => false,
             ]);
         }
     }

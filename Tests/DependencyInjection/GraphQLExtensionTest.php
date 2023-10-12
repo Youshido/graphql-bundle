@@ -9,11 +9,12 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
+use Youshido\GraphQLBundle\DependencyInjection\Compiler\GraphQlCompilerPass;
 use Youshido\GraphQLBundle\DependencyInjection\GraphQLExtension;
 
 class GraphQLExtensionTest extends \PHPUnit_Framework_TestCase
 {
-    public function testDefaultConfigIsUsed()
+    public function testDefaultConfigIsUsed(): void
     {
         $container = $this->loadContainerFromFile('empty', 'yml');
 
@@ -31,14 +32,14 @@ class GraphQLExtensionTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($container->getParameter('graphql.response.json_pretty'));
         $this->assertEquals([
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Headers' => 'Content-Type',
-            ],
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Headers' => 'Content-Type',
+        ],
             $container->getParameter('graphql.response.headers')
         );
     }
 
-    public function testDefaultCanBeOverridden()
+    public function testDefaultCanBeOverridden(): void
     {
         $container = $this->loadContainerFromFile('full', 'yml');
         $this->assertEquals('AppBundle\GraphQL\Schema', $container->getParameter('graphql.schema_class'));
@@ -63,19 +64,24 @@ class GraphQLExtensionTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    private function loadContainerFromFile($file, $type, array $services = array(), $skipEnvVars = false)
+    /**
+     * @throws \Exception
+     */
+    private function loadContainerFromFile(string $file, string $type, array $services = array(), $skipEnvVars = false)
     {
         $container = new ContainerBuilder();
         if ($skipEnvVars && !method_exists($container, 'resolveEnvPlaceholders')) {
             $this->markTestSkipped('Runtime environment variables has been introduced in the Dependency Injection version 3.2.');
         }
+
         $container->setParameter('kernel.debug', false);
         $container->setParameter('kernel.cache_dir', '/tmp');
         foreach ($services as $id => $service) {
             $container->set($id, $service);
         }
+
         $container->registerExtension(new GraphQLExtension());
-        $locator = new FileLocator(__DIR__.'/Fixtures/config/'.$type);
+        $locator = new FileLocator(__DIR__ . '/Fixtures/config/' . $type);
 
         switch ($type) {
             case 'xml':
@@ -91,9 +97,9 @@ class GraphQLExtensionTest extends \PHPUnit_Framework_TestCase
                 throw new \InvalidArgumentException('Invalid file type');
         }
 
-        $loader->load($file.'.'.$type);
+        $loader->load($file . '.' . $type);
         $container->getCompilerPassConfig()->setOptimizationPasses(array(
-            new ResolveDefinitionTemplatesPass(),
+            new GraphQlCompilerPass(),
         ));
         $container->getCompilerPassConfig()->setRemovingPasses(array());
         $container->compile();

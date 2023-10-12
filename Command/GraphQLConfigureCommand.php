@@ -2,21 +2,31 @@
 
 namespace Youshido\GraphQLBundle\Command;
 
-use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
+use Exception;
 use Symfony\Component\Config\Resource\DirectoryResource;
 use Symfony\Component\Config\Resource\FileResource;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class GraphQLConfigureCommand extends ContainerAwareCommand
+class GraphQLConfigureCommand extends Command
 {
-    const PROJECT_NAMESPACE = 'App';
+    protected ContainerInterface $container;
+
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+        parent::__construct();
+    }
+
+    final const PROJECT_NAMESPACE = 'App';
 
     /**
      * {@inheritdoc}
      */
-    protected function configure()
+    protected function configure(): void
     {
         $this
             ->setName('graphql:configure')
@@ -27,18 +37,17 @@ class GraphQLConfigureCommand extends ContainerAwareCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $isComposerCall = $input->getOption('composer');
 
-        $container  = $this->getContainer();
-        $rootDir    = $container->getParameter('kernel.root_dir');
+        $rootDir = $this->container->getParameter('kernel.root_dir');
         $configFile = $rootDir . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'config/packages/graphql.yml';
 
-        $className       = 'Schema';
+        $className = 'Schema';
         $schemaNamespace = self::PROJECT_NAMESPACE . '\\GraphQL';
-        $graphqlPath     = rtrim($rootDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'GraphQL';
-        $classPath       = $graphqlPath . DIRECTORY_SEPARATOR . $className . '.php';
+        $graphqlPath = rtrim($rootDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . 'GraphQL';
+        $classPath = $graphqlPath . DIRECTORY_SEPARATOR . $className . '.php';
 
         $inputHelper = $this->getHelper('question');
         if (file_exists($classPath)) {
@@ -54,6 +63,7 @@ class GraphQLConfigureCommand extends ContainerAwareCommand
             if (!is_dir($graphqlPath)) {
                 mkdir($graphqlPath, 0777, true);
             }
+            
             file_put_contents($classPath, $this->getSchemaClassTemplate($schemaNamespace, $className));
 
             $output->writeln('Schema file has been created at');
@@ -69,9 +79,9 @@ class GraphQLConfigureCommand extends ContainerAwareCommand
             }
 
             $originalConfigData = file_get_contents($configFile);
-            if (strpos($originalConfigData, 'graphql') === false) {
+            if (!str_contains($originalConfigData, 'graphql')) {
                 $projectNameSpace = self::PROJECT_NAMESPACE;
-                $configData       = <<<CONFIG
+                $configData = <<<CONFIG
 graphql:
     schema_class: "{$projectNameSpace}\\\\GraphQL\\\\{$className}"
 
@@ -79,6 +89,7 @@ CONFIG;
                 file_put_contents($configFile, $configData . $originalConfigData);
             }
         }
+        
         if (!$this->graphQLRouteExists()) {
             $question = new ConfirmationQuestion('Confirm adding GraphQL route? [Y/n]', true);
             $resource = $this->getMainRouteConfig();
@@ -91,24 +102,20 @@ CONFIG;
                 file_put_contents($resource, $routeConfigData, FILE_APPEND);
                 $output->writeln('Config was added to ' . $resource);
             }
-        } else {
-            if (!$isComposerCall) {
-                $output->writeln('GraphQL default route was found.');
-            }
+        } elseif (!$isComposerCall) {
+            $output->writeln('GraphQL default route was found.');
         }
     }
 
     /**
-     * @return null|string
-     *
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function getMainRouteConfig()
+    protected function getMainRouteConfig(): ?string
     {
-        $routerResources = $this->getContainer()->get('router')->getRouteCollection()->getResources();
+        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
         foreach ($routerResources as $resource) {
             /** @var FileResource|DirectoryResource $resource */
-            if (method_exists($resource, 'getResource') && substr($resource->getResource(), -11) == 'routes.yaml') {
+            if (method_exists($resource, 'getResource') && str_ends_with($resource->getResource(), 'routes.yaml')) {
                 return $resource->getResource();
             }
         }
@@ -117,15 +124,14 @@ CONFIG;
     }
 
     /**
-     * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    protected function graphQLRouteExists()
+    protected function graphQLRouteExists(): bool
     {
-        $routerResources = $this->getContainer()->get('router')->getRouteCollection()->getResources();
+        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
         foreach ($routerResources as $resource) {
             /** @var FileResource|DirectoryResource $resource */
-            if (method_exists($resource, 'getResource') && strpos($resource->getResource(), 'GraphQLController.php') !== false) {
+            if (method_exists($resource, 'getResource') && str_contains($resource->getResource(), 'GraphQLController.php')) {
                 return true;
             }
         }
@@ -138,21 +144,21 @@ CONFIG;
 
     }
 
-    protected function getSchemaClassTemplate($nameSpace, $className = 'Schema')
+    protected function getSchemaClassTemplate($nameSpace, $className = 'Schema'): string
     {
-        $tpl = <<<TEXT
+        return <<<TEXT
 <?php
 /**
  * This class was automatically generated by GraphQL Schema generator
  */
 
-namespace $nameSpace;
+namespace {$nameSpace};
 
 use Youshido\GraphQL\Schema\AbstractSchema;
 use Youshido\GraphQL\Config\Schema\SchemaConfig;
 use Youshido\GraphQL\Type\Scalar\StringType;
 
-class $className extends AbstractSchema
+class {$className} extends AbstractSchema
 {
     public function build(SchemaConfig \$config)
     {
@@ -176,7 +182,5 @@ class $className extends AbstractSchema
 
 
 TEXT;
-
-        return $tpl;
     }
 }

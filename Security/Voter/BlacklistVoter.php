@@ -17,13 +17,11 @@ class BlacklistVoter extends AbstractListVoter
     /**
      * Perform a single access check operation on a given attribute, subject and token.
      *
-     * @param string         $attribute
-     * @param mixed          $subject
-     * @param TokenInterface $token
+     * @param string $attribute
+     * @param mixed $subject
      *
-     * @return bool
      */
-    protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
+    protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         /** @var $subject Query */
         return $this->isLoggedInUser($token) || !$this->inList($subject->getName());

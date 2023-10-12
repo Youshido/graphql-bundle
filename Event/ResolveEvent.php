@@ -9,20 +9,18 @@ use Youshido\GraphQL\Parser\Ast\Field;
 class ResolveEvent extends GenericEvent
 {
     /**
-     * @var Field */
-    private $field;
+     * @var Field
+     */
+    private readonly \Youshido\GraphQL\Field\FieldInterface $field;
 
-    /** @var array */
-    private $astFields;
-    
+    private readonly array $astFields;
+
     /** @var mixed|null */
     private $resolvedValue;
 
     /**
      * Constructor.
      *
-     * @param FieldInterface $field
-     * @param array $astFields
      * @param mixed|null $resolvedValue
      */
     public function __construct(FieldInterface $field, array $astFields, $resolvedValue = null)
@@ -55,7 +53,7 @@ class ResolveEvent extends GenericEvent
 
     /**
      * Returns the resolved value.
-     * 
+     *
      * @return mixed|null
      */
     public function getResolvedValue()
@@ -65,10 +63,10 @@ class ResolveEvent extends GenericEvent
 
     /**
      * Allows the event listener to manipulate the resolved value.
-     * 
+     *
      * @param $resolvedValue
      */
-    public function setResolvedValue($resolvedValue)
+    public function setResolvedValue($resolvedValue): void
     {
         $this->resolvedValue = $resolvedValue;
     }

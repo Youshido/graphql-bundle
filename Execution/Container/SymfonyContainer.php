@@ -9,6 +9,7 @@
 namespace Youshido\GraphQLBundle\Execution\Container;
 
 
+use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Youshido\GraphQL\Execution\Container\ContainerInterface;
@@ -28,9 +29,9 @@ class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
         return $this;
     }
 
-    public function remove($id)
+    public function remove($id): void
     {
-        throw new \RuntimeException('Remove method is not available for Symfony container');
+        throw new RuntimeException('Remove method is not available for Symfony container');
     }
 
     public function has($id)
@@ -43,7 +44,7 @@ class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
         return $this->container->initialized($id);
     }
 
-    public function setParameter($name, $value)
+    public function setParameter($name, $value): static
     {
         $this->container->setParameter($name, $value);
         return $this;

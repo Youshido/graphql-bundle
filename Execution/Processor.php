@@ -4,7 +4,9 @@ namespace Youshido\GraphQLBundle\Execution;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\Kernel;
+use Youshido\GraphQL\Exception\ResolveException;
 use Youshido\GraphQL\Execution\Context\ExecutionContextInterface;
 use Youshido\GraphQL\Execution\Processor as BaseProcessor;
 use Youshido\GraphQL\Execution\ResolveInfo;
@@ -16,10 +18,8 @@ use Youshido\GraphQL\Parser\Ast\Interfaces\FieldInterface as AstFieldInterface;
 use Youshido\GraphQL\Parser\Ast\Query;
 use Youshido\GraphQL\Parser\Ast\Query as AstQuery;
 use Youshido\GraphQL\Type\TypeService;
-use Youshido\GraphQL\Exception\ResolveException;
 use Youshido\GraphQLBundle\Event\ResolveEvent;
 use Youshido\GraphQLBundle\Security\Manager\SecurityManagerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class Processor extends BaseProcessor
 {
@@ -27,17 +27,12 @@ class Processor extends BaseProcessor
     /** @var  LoggerInterface */
     private $logger;
 
-    /** @var  SecurityManagerInterface */
-    private $securityManager;
+    private ?\Youshido\GraphQLBundle\Security\Manager\SecurityManagerInterface $securityManager = null;
 
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private readonly \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher;
 
     /**
      * Constructor.
-     *
-     * @param ExecutionContextInterface $executionContext
-     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(ExecutionContextInterface $executionContext, EventDispatcherInterface $eventDispatcher)
     {
@@ -47,41 +42,36 @@ class Processor extends BaseProcessor
         parent::__construct($executionContext->getSchema());
     }
 
-    /**
-     * @param SecurityManagerInterface $securityManger
-     *
-     * @return Processor
-     */
-    public function setSecurityManager(SecurityManagerInterface $securityManger)
+
+    public function setSecurityManager(SecurityManagerInterface $securityManger): static
     {
         $this->securityManager = $securityManger;
 
         return $this;
     }
 
-    public function processPayload($payload, $variables = [], $reducers = [])
+    public function processPayload($payload, $variables = [], $reducers = []): static
     {
-        if ($this->logger) {
-            $this->logger->debug(sprintf('GraphQL query: %s', $payload), (array)$variables);
-        }
+        $this->logger?->debug(sprintf('GraphQL query: %s', $payload), (array)$variables);
 
-        parent::processPayload($payload, $variables);
+        return parent::processPayload($payload, $variables);
     }
 
-    protected function resolveQuery(Query $query)
+    protected function resolveQuery(Query $query): array
     {
         $this->assertClientHasOperationAccess($query);
 
         return parent::resolveQuery($query);
     }
 
-    private function dispatchResolveEvent(ResolveEvent $event, $name){
+    private function dispatchResolveEvent(ResolveEvent $event, string $name): void
+    {
         $major = Kernel::MAJOR_VERSION;
         $minor = Kernel::MINOR_VERSION;
 
-        if($major > 4 || ($major === 4 && $minor >= 3)){
+        if ($major > 4 || ($major === 4 && $minor >= 3)) {
             $this->eventDispatcher->dispatch($event, $name);
-        }else{
+        } else {
             $this->eventDispatcher->dispatch($name, $event);
         }
     }
@@ -98,15 +88,15 @@ class Processor extends BaseProcessor
         $resolveInfo = $this->createResolveInfo($field, $astFields);
         $this->assertClientHasFieldAccess($resolveInfo);
 
-        if (in_array('Symfony\Component\DependencyInjection\ContainerAwareInterface', class_implements($field))) {
+        if (in_array(\Symfony\Component\DependencyInjection\ContainerAwareInterface::class, class_implements($field))) {
             /** @var $field ContainerAwareInterface */
             $field->setContainer($this->executionContext->getContainer()->getSymfonyContainer());
         }
 
         if (($field instanceof AbstractField) && ($resolveFunc = $field->getConfig()->getResolveFunction())) {
             if ($this->isServiceReference($resolveFunc)) {
-                $service = substr($resolveFunc[0], 1);
-                $method  = $resolveFunc[1];
+                $service = substr((string)$resolveFunc[0], 1);
+                $method = $resolveFunc[1];
                 if (!$this->executionContext->getContainer()->has($service)) {
                     throw new ResolveException(sprintf('Resolve service "%s" not found for field "%s"', $service, $field->getName()));
                 }
@@ -132,7 +122,7 @@ class Processor extends BaseProcessor
         return $event->getResolvedValue();
     }
 
-    private function assertClientHasOperationAccess(Query $query)
+    private function assertClientHasOperationAccess(Query $query): void
     {
         if ($this->securityManager->isSecurityEnabledFor(SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE)
             && !$this->securityManager->isGrantedToOperationResolve($query)
@@ -141,7 +131,7 @@ class Processor extends BaseProcessor
         }
     }
 
-    private function assertClientHasFieldAccess(ResolveInfo $resolveInfo)
+    private function assertClientHasFieldAccess(ResolveInfo $resolveInfo): void
     {
         if ($this->securityManager->isSecurityEnabledFor(SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE)
             && !$this->securityManager->isGrantedToFieldResolve($resolveInfo)
@@ -151,12 +141,12 @@ class Processor extends BaseProcessor
     }
 
 
-    private function isServiceReference($resolveFunc)
+    private function isServiceReference($resolveFunc): bool
     {
-        return is_array($resolveFunc) && count($resolveFunc) == 2 && strpos($resolveFunc[0], '@') === 0;
+        return is_array($resolveFunc) && count($resolveFunc) == 2 && strpos((string)$resolveFunc[0], '@') === 0;
     }
 
-    public function setLogger($logger = null)
+    public function setLogger($logger = null): void
     {
         $this->logger = $logger;
     }

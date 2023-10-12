@@ -12,12 +12,13 @@
         #graphiql {
             height: 100vh;
         }
+
         .token-button {
             position: absolute;
             left: 250px;
             top: 12px;
             background: -webkit-linear-gradient(#fbfbfb, #f8f8f8);
-            background:         linear-gradient(#fbfbfb, #f8f8f8);
+            background: linear-gradient(#fbfbfb, #f8f8f8);
             border-width: 1px;
             border-style: solid;
             border-color: #d3d3d3 #d0d0d0 #bababa;
@@ -33,6 +34,7 @@
             font-family: system, -apple-system, 'San Francisco', '.SFNSDisplay-Regular', 'Segoe UI', Segoe, 'Segoe WP', 'Helvetica Neue', helvetica, 'Lucida Grande', arial, sans-serif;
             font-size: 14px;
         }
+
         #token-input {
             display: none;
             position: absolute;
@@ -71,14 +73,14 @@
      * various React params to enable interesting integrations.
      */
 
-            // Parse the search string to get url parameters.
-    var search     = window.location.search;
+        // Parse the search string to get url parameters.
+    var search = window.location.search;
     var parameters = {};
     search.substr(1).split('&').forEach(function (entry) {
         var eq = entry.indexOf('=');
         if (eq >= 0) {
             parameters[decodeURIComponent(entry.slice(0, eq))] =
-                    decodeURIComponent(entry.slice(eq + 1));
+                decodeURIComponent(entry.slice(eq + 1));
         }
     });
 
@@ -86,7 +88,7 @@
     if (parameters.variables) {
         try {
             parameters.variables =
-                    JSON.stringify(JSON.parse(parameters.variables), null, 2);
+                JSON.stringify(JSON.parse(parameters.variables), null, 2);
         } catch (e) {
             // Do nothing, we want to display the invalid JSON as a string, rather
             // than present an error.
@@ -112,11 +114,11 @@
 
     function updateURL() {
         var newSearch = '?' + Object.keys(parameters).filter(function (key) {
-                    return Boolean(parameters[key]);
-                }).map(function (key) {
-                    return encodeURIComponent(key) + '=' +
-                           encodeURIComponent(parameters[key]);
-                }).join('&');
+            return Boolean(parameters[key]);
+        }).map(function (key) {
+            return encodeURIComponent(key) + '=' +
+                encodeURIComponent(parameters[key]);
+        }).join('&');
         history.replaceState(null, null, newSearch);
     }
 
@@ -129,7 +131,7 @@
     // Defines a GraphQL fetcher using the fetch API.
     function graphQLFetcher(graphQLParams) {
         var headers = {
-            'Accept':       'application/json',
+            'Accept': 'application/json',
             'Content-Type': 'application/json',
         };
         if (window.tokenInput) {
@@ -143,9 +145,9 @@
         }
 
         return fetch("{{ graphQLUrl }}", {
-            method:      'post',
-            headers:     headers,
-            body:        JSON.stringify(graphQLParams),
+            method: 'post',
+            headers: headers,
+            body: JSON.stringify(graphQLParams),
             credentials: 'include'
         }).then(function (response) {
             return response.text();
@@ -160,27 +162,27 @@
 
     // Render <GraphiQL /> into the body.
     ReactDOM.render(
-            React.createElement(GraphiQL, {
-                fetcher:             graphQLFetcher,
-                query:               parameters.query,
-                variables:           parameters.variables,
-                operationName:       parameters.operationName,
-                onEditQuery:         onEditQuery,
-                onEditVariables:     onEditVariables,
-                onEditOperationName: onEditOperationName
-            }),
-            document.getElementById('graphiql')
+        React.createElement(GraphiQL, {
+            fetcher: graphQLFetcher,
+            query: parameters.query,
+            variables: parameters.variables,
+            operationName: parameters.operationName,
+            onEditQuery: onEditQuery,
+            onEditVariables: onEditVariables,
+            onEditOperationName: onEditOperationName
+        }),
+        document.getElementById('graphiql')
     );
 
 </script>
 <script>
-    var button     = document.querySelector('.token-button');
+    var button = document.querySelector('.token-button');
     var tokenInput = document.querySelector('#token-input');
-    button.addEventListener('click', function() {
-        button.style.display     = 'none';
+    button.addEventListener('click', function () {
+        button.style.display = 'none';
         tokenInput.style.display = 'inline-block';
     });
-    tokenInput.addEventListener('change', function() {
+    tokenInput.addEventListener('change', function () {
         if (window.localStorage) {
             window.localStorage.setItem('api-token', tokenInput.value);
         }

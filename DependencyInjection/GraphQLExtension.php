@@ -14,18 +14,18 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  */
 class GraphQLExtension extends Extension
 {
-    private $config = [];
+    private array $config = [];
 
     /**
      * {@inheritdoc}
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $configuration = new Configuration();
-        $this->config  = $this->processConfiguration($configuration, $configs);
+        $this->config = $this->processConfiguration($configuration, $configs);
 
         $preparedHeaders = [];
-        $headers         = $this->config['response']['headers'] ? $this->config['response']['headers'] : $this->getDefaultHeaders();
+        $headers = $this->config['response']['headers'] ? $this->config['response']['headers'] : $this->getDefaultHeaders();
         foreach ($headers as $header) {
             $preparedHeaders[$header['name']] = $header['value'];
         }
@@ -38,7 +38,7 @@ class GraphQLExtension extends Extension
         $container->setParameter('graphql.response.json_pretty', $this->config['response']['json_pretty']);
 
         $container->setParameter('graphql.security.guard_config', [
-            'field'     => $this->config['security']['guard']['field'],
+            'field' => $this->config['security']['guard']['field'],
             'operation' => $this->config['security']['guard']['operation']
         ]);
 
@@ -50,7 +50,7 @@ class GraphQLExtension extends Extension
         $loader->load('services.xml');
     }
 
-    private function getDefaultHeaders()
+    private function getDefaultHeaders(): array
     {
         return [
             ['name' => 'Access-Control-Allow-Origin', 'value' => '*'],
@@ -58,7 +58,7 @@ class GraphQLExtension extends Extension
         ];
     }
 
-    public function getAlias()
+    public function getAlias(): string
     {
         return "graphql";
     }

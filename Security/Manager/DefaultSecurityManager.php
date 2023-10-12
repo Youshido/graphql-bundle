@@ -7,7 +7,6 @@
 
 namespace Youshido\GraphQLBundle\Security\Manager;
 
-
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Youshido\GraphQL\Execution\ResolveInfo;
@@ -15,20 +14,18 @@ use Youshido\GraphQL\Parser\Ast\Query;
 
 class DefaultSecurityManager implements SecurityManagerInterface
 {
+    /** @var bool */
+    private mixed $fieldSecurityEnabled;
 
     /** @var bool */
-    private $fieldSecurityEnabled = false;
+    private mixed $rootOperationSecurityEnabled;
 
-    /** @var bool */
-    private $rootOperationSecurityEnabled = false;
-
-    /** @var  AuthorizationCheckerInterface */
-    private $authorizationChecker;
+    private readonly AuthorizationCheckerInterface $authorizationChecker;
 
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, array $guardConfig = [])
     {
-        $this->authorizationChecker         = $authorizationChecker;
-        $this->fieldSecurityEnabled         = isset($guardConfig['field']) ? $guardConfig['field'] : false;
+        $this->authorizationChecker = $authorizationChecker;
+        $this->fieldSecurityEnabled = isset($guardConfig['field']) ? $guardConfig['field'] : false;
         $this->rootOperationSecurityEnabled = isset($guardConfig['operation']) ? $guardConfig['operation'] : false;
     }
 
@@ -41,7 +38,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
     {
         if (SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE == $attribute) {
             return $this->fieldSecurityEnabled;
-        } else if (SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE == $attribute) {
+        } elseif (SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE == $attribute) {
             return $this->rootOperationSecurityEnabled;
         }
 
@@ -51,7 +48,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
     /**
      * @param boolean $fieldSecurityEnabled
      */
-    public function setFieldSecurityEnabled($fieldSecurityEnabled)
+    public function setFieldSecurityEnabled(mixed $fieldSecurityEnabled): void
     {
         $this->fieldSecurityEnabled = $fieldSecurityEnabled;
     }
@@ -59,51 +56,39 @@ class DefaultSecurityManager implements SecurityManagerInterface
     /**
      * @param boolean $rootOperationSecurityEnabled
      */
-    public function setRooOperationSecurityEnabled($rootOperationSecurityEnabled)
+    public function setRooOperationSecurityEnabled(mixed $rootOperationSecurityEnabled): void
     {
         $this->rootOperationSecurityEnabled = $rootOperationSecurityEnabled;
     }
 
-    /**
-     * @param Query $query
-     *
-     * @return bool
-     */
-    public function isGrantedToOperationResolve(Query $query)
+    
+    public function isGrantedToOperationResolve(Query $query): bool
     {
         return $this->authorizationChecker->isGranted(SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE, $query);
     }
 
-    /**
-     * @param ResolveInfo $resolveInfo
-     *
-     * @return bool
-     */
-    public function isGrantedToFieldResolve(ResolveInfo $resolveInfo)
+    
+    public function isGrantedToFieldResolve(ResolveInfo $resolveInfo): bool
     {
         return $this->authorizationChecker->isGranted(SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE, $resolveInfo);
     }
 
     /**
-     * @param ResolveInfo $resolveInfo
      *
      * @return mixed
-     *
      * @throw \Exception
      */
-    public function createNewFieldAccessDeniedException(ResolveInfo $resolveInfo)
+    public function createNewFieldAccessDeniedException(ResolveInfo $resolveInfo): \Symfony\Component\Security\Core\Exception\AccessDeniedException
     {
         return new AccessDeniedException();
     }
 
     /**
-     * @param Query $query
      *
      * @return mixed
-     *
      * @throw \Exception
      */
-    public function createNewOperationAccessDeniedException(Query $query)
+    public function createNewOperationAccessDeniedException(Query $query): \Symfony\Component\Security\Core\Exception\AccessDeniedException
     {
         return new AccessDeniedException();
     }

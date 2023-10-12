@@ -7,25 +7,27 @@
 
 namespace Youshido\GraphQLBundle\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use DateTime;
+use DateTimeZone;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Annotation\Route;
 
-class GraphQLExplorerController extends Controller
+class GraphQLExplorerController extends AbstractController
 {
     /**
      * @Route("/graphql/explorer")
      *
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @return Response
      */
-    public function explorerAction()
+    public function explorerAction(): Response
     {
         $response = $this->render('@GraphQLBundle/Feature/explorer.html.twig', [
             'graphQLUrl' => $this->generateUrl('youshido_graphql_graphql_default'),
             'tokenHeader' => 'access-token'
         ]);
 
-        $date = \DateTime::createFromFormat('U', strtotime('tomorrow'), new \DateTimeZone('UTC'));
+        $date = DateTime::createFromFormat('U', strtotime('tomorrow'), new DateTimeZone('UTC'));
         $response->setExpires($date);
         $response->setPublic();
 

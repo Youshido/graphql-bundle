@@ -17,5 +17,4 @@ abstract class AbstractContainerAwareField extends BaseAbstractField implements 
 {
 
     use ContainerAwareTrait;
-
 }

@@ -7,28 +7,31 @@
 
 namespace Youshido\GraphQLBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Exception;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Youshido\GraphQL\Exception\ConfigurationException;
+use UnitEnum;
 use Youshido\GraphQLBundle\Exception\UnableToInitializeSchemaServiceException;
 use Youshido\GraphQLBundle\Execution\Processor;
 
-class GraphQLController extends Controller
+class GraphQLController extends AbstractController
 {
+    public $container;
+
     /**
      * @Route("/graphql")
      *
-     * @throws \Exception
-     *
      * @return JsonResponse
+     * @throws Exception
+     *
      */
-    public function defaultAction()
+    public function defaultAction(): JsonResponse
     {
         try {
             $this->initializeSchemaService();
-        } catch (UnableToInitializeSchemaServiceException $e) {
+        } catch (UnableToInitializeSchemaServiceException $unableToInitializeSchemaServiceException) {
             return new JsonResponse(
                 [['message' => 'Schema class ' . $this->getSchemaClass() . ' does not exist']],
                 200,
@@ -36,13 +39,13 @@ class GraphQLController extends Controller
             );
         }
 
-        if ($this->get('request_stack')->getCurrentRequest()->getMethod() == 'OPTIONS') {
+        if ($this->container->get('request_stack')->getCurrentRequest()->getMethod() == 'OPTIONS') {
             return $this->createEmptyResponse();
         }
 
         list($queries, $isMultiQueryRequest) = $this->getPayload();
 
-        $queryResponses = array_map(function($queryData) {
+        $queryResponses = array_map(function (array $queryData) {
             return $this->executeQuery($queryData['query'], $queryData['variables']);
         }, $queries);
 
@@ -55,15 +58,15 @@ class GraphQLController extends Controller
         return $response;
     }
 
-    private function createEmptyResponse()
+    private function createEmptyResponse(): JsonResponse
     {
         return new JsonResponse([], 200, $this->getResponseHeaders());
     }
 
-    private function executeQuery($query, $variables)
+    private function executeQuery($query, $variables): array
     {
         /** @var Processor $processor */
-        $processor = $this->get('graphql.processor');
+        $processor = $this->container->get('graphql.processor');
         $processor->processPayload($query, $variables);
 
         return $processor->getResponseData();
@@ -72,11 +75,11 @@ class GraphQLController extends Controller
     /**
      * @return array
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    private function getPayload()
+    private function getPayload(): array
     {
-        $request = $this->get('request_stack')->getCurrentRequest();
+        $request = $this->container->get('request_stack')->getCurrentRequest();
         $query = $request->get('query', null);
         $variables = $request->get('variables', []);
         $isMultiQueryRequest = false;
@@ -92,18 +95,18 @@ class GraphQLController extends Controller
                     'variables' => [],
                 ];
             } else {
-                $params = json_decode($content, true);
+                $params = json_decode((string)$content, true);
 
                 if ($params) {
                     // check for a list of queries
-                    if (isset($params[0]) === true) {
+                    if (isset($params[0])) {
                         $isMultiQueryRequest = true;
                     } else {
                         $params = [$params];
                     }
 
                     foreach ($params as $queryParams) {
-                        $query = isset($queryParams['query']) ? $queryParams['query'] : $query;
+                        $query = $queryParams['query'] ?? $query;
 
                         if (isset($queryParams['variables'])) {
                             if (is_string($queryParams['variables'])) {
@@ -133,9 +136,9 @@ class GraphQLController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
-    private function initializeSchemaService()
+    private function initializeSchemaService(): void
     {
         if ($this->container->initialized('graphql.schema')) {
             return;
@@ -145,11 +148,11 @@ class GraphQLController extends Controller
     }
 
     /**
-     * @return object
+     * @return ContainerAwareInterface
      *
-     * @throws \Exception
+     * @throws UnableToInitializeSchemaServiceException
      */
-    private function makeSchemaService()
+    private function makeSchemaService(): ContainerAwareInterface
     {
         if ($this->container->has($this->getSchemaService())) {
             return $this->container->get($this->getSchemaService());
@@ -175,7 +178,7 @@ class GraphQLController extends Controller
     /**
      * @return string
      */
-    private function getSchemaClass()
+    private function getSchemaClass(): string
     {
         return $this->getParameter('graphql.schema_class');
     }
@@ -183,18 +186,18 @@ class GraphQLController extends Controller
     /**
      * @return string
      */
-    private function getSchemaService()
+    private function getSchemaService(): string
     {
         $serviceName = $this->getParameter('graphql.schema_service');
 
-        if (substr($serviceName, 0, 1) === '@') {
-            return substr($serviceName, 1, strlen($serviceName) - 1);
+        if (str_starts_with((string)$serviceName, '@')) {
+            return substr((string)$serviceName, 1, strlen((string)$serviceName) - 1);
         }
 
         return $serviceName;
     }
 
-    private function getResponseHeaders()
+    private function getResponseHeaders(): UnitEnum|float|int|bool|array|string|null
     {
         return $this->getParameter('graphql.response.headers');
     }

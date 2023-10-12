@@ -14,7 +14,8 @@ interface SecurityManagerInterface
 {
 
     const RESOLVE_ROOT_OPERATION_ATTRIBUTE = 'RESOLVE_ROOT_OPERATION';
-    const RESOLVE_FIELD_ATTRIBUTE          = 'RESOLVE_FIELD';
+    
+    const RESOLVE_FIELD_ATTRIBUTE = 'RESOLVE_FIELD';
 
     /**
      * @param $attribute string
@@ -24,33 +25,25 @@ interface SecurityManagerInterface
     public function isSecurityEnabledFor($attribute);
 
     /**
-     * @param ResolveInfo $resolveInfo
-     *
      * @return bool
      */
     public function isGrantedToFieldResolve(ResolveInfo $resolveInfo);
 
     /**
-     * @param Query $query
-     *
      * @return bool
      */
     public function isGrantedToOperationResolve(Query $query);
 
     /**
-     * @param ResolveInfo $resolveInfo
      *
      * @return mixed
-     *
      * @throw \Exception
      */
     public function createNewFieldAccessDeniedException(ResolveInfo $resolveInfo);
 
     /**
-     * @param Query $query
      *
      * @return mixed
-     *
      * @throw \Exception
      */
     public function createNewOperationAccessDeniedException(Query $query);

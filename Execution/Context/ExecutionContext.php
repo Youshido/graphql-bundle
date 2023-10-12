@@ -8,14 +8,15 @@
 
 namespace Youshido\GraphQLBundle\Execution\Context;
 
-use \Youshido\GraphQL\Execution\Context\ExecutionContext as BaseExecutionContext;
+use Youshido\GraphQL\Execution\Context\ExecutionContext as BaseExecutionContext;
 use Youshido\GraphQL\Schema\AbstractSchema;
 use Youshido\GraphQL\Validator\ConfigValidator\ConfigValidator;
 use Youshido\GraphQLBundle\Config\Rule\TypeValidationRule;
 
 class ExecutionContext extends BaseExecutionContext
 {
-    public function __construct(AbstractSchema $schema) {
+    public function __construct(AbstractSchema $schema)
+    {
         $validator = ConfigValidator::getInstance();
         $validator->addRule('type', new TypeValidationRule($validator));
 
