@@ -5,7 +5,7 @@
  * @author Portey Vasil <portey@gmail.com>
  */
 
-namespace Youshido\GraphQLBundle\src\Controller;
+namespace Youshido\GraphQLBundle\Controller;
 
 use DateTime;
 use DateTimeZone;

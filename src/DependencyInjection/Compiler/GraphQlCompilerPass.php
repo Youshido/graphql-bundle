@@ -1,14 +1,14 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\DependencyInjection\Compiler;
+namespace Youshido\GraphQLBundle\DependencyInjection\Compiler;
 
 use Exception;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
-use Youshido\GraphQLBundle\src\Security\Voter\BlacklistVoter;
-use Youshido\GraphQLBundle\src\Security\Voter\WhitelistVoter;
+use Youshido\GraphQLBundle\Security\Voter\BlacklistVoter;
+use Youshido\GraphQLBundle\Security\Voter\WhitelistVoter;
 
 /**
  * Date: 25.08.16

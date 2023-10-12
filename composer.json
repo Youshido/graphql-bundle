@@ -18,7 +18,12 @@
   ],
   "autoload": {
     "psr-4": {
-      "Youshido\\GraphQLBundle\\": ""
+      "Youshido\\GraphQLBundle\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Youshido\\GraphQLBundle\\": "Tests/"
     }
   },
   "require": {

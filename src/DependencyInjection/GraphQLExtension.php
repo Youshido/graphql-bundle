@@ -1,6 +1,6 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\DependencyInjection;
+namespace Youshido\GraphQLBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

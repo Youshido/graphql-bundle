@@ -1,6 +1,6 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\Command;
+namespace Youshido\GraphQLBundle\Command;
 
 use Exception;
 use Symfony\Component\Config\Resource\DirectoryResource;
@@ -13,6 +13,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class GraphQLConfigureCommand extends Command
 {
+    final const PROJECT_NAMESPACE = 'App';
     protected ContainerInterface $container;
 
     public function __construct(ContainerInterface $container)
@@ -20,8 +21,6 @@ class GraphQLConfigureCommand extends Command
         $this->container = $container;
         parent::__construct();
     }
-
-    final const PROJECT_NAMESPACE = 'App';
 
     /**
      * {@inheritdoc}
@@ -63,7 +62,7 @@ class GraphQLConfigureCommand extends Command
             if (!is_dir($graphqlPath)) {
                 mkdir($graphqlPath, 0777, true);
             }
-            
+
             file_put_contents($classPath, $this->getSchemaClassTemplate($schemaNamespace, $className));
 
             $output->writeln('Schema file has been created at');
@@ -89,7 +88,7 @@ CONFIG;
                 file_put_contents($configFile, $configData . $originalConfigData);
             }
         }
-        
+
         if (!$this->graphQLRouteExists()) {
             $question = new ConfirmationQuestion('Confirm adding GraphQL route? [Y/n]', true);
             $resource = $this->getMainRouteConfig();
@@ -105,43 +104,6 @@ CONFIG;
         } elseif (!$isComposerCall) {
             $output->writeln('GraphQL default route was found.');
         }
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function getMainRouteConfig(): ?string
-    {
-        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
-        foreach ($routerResources as $resource) {
-            /** @var FileResource|DirectoryResource $resource */
-            if (method_exists($resource, 'getResource') && str_ends_with($resource->getResource(), 'routes.yaml')) {
-                return $resource->getResource();
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @throws Exception
-     */
-    protected function graphQLRouteExists(): bool
-    {
-        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
-        foreach ($routerResources as $resource) {
-            /** @var FileResource|DirectoryResource $resource */
-            if (method_exists($resource, 'getResource') && str_contains($resource->getResource(), 'GraphQLController.php')) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    protected function generateRoutes()
-    {
-
     }
 
     protected function getSchemaClassTemplate($nameSpace, $className = 'Schema'): string
@@ -182,5 +144,42 @@ class {$className} extends AbstractSchema
 
 
 TEXT;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function graphQLRouteExists(): bool
+    {
+        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
+        foreach ($routerResources as $resource) {
+            /** @var FileResource|DirectoryResource $resource */
+            if (method_exists($resource, 'getResource') && str_contains($resource->getResource(), 'GraphQLController.php')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function getMainRouteConfig(): ?string
+    {
+        $routerResources = $this->container->get('router')->getRouteCollection()->getResources();
+        foreach ($routerResources as $resource) {
+            /** @var FileResource|DirectoryResource $resource */
+            if (method_exists($resource, 'getResource') && str_ends_with($resource->getResource(), 'routes.yaml')) {
+                return $resource->getResource();
+            }
+        }
+
+        return null;
+    }
+
+    protected function generateRoutes()
+    {
+
     }
 }

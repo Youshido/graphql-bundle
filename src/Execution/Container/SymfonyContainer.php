@@ -6,7 +6,7 @@
  * created: 9/23/16 10:08 PM
  */
 
-namespace Youshido\GraphQLBundle\src\Execution\Container;
+namespace Youshido\GraphQLBundle\Execution\Container;
 
 
 use RuntimeException;

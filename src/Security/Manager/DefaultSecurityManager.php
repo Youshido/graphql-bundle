@@ -5,7 +5,7 @@
  * @author Portey Vasil <portey@gmail.com>
  */
 
-namespace Youshido\GraphQLBundle\src\Security\Manager;
+namespace Youshido\GraphQLBundle\Security\Manager;
 
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -34,7 +34,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
      *
      * @return bool
      */
-    public function isSecurityEnabledFor($attribute)
+    public function isSecurityEnabledFor($attribute): bool
     {
         if (SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE == $attribute) {
             return $this->fieldSecurityEnabled;
@@ -61,13 +61,13 @@ class DefaultSecurityManager implements SecurityManagerInterface
         $this->rootOperationSecurityEnabled = $rootOperationSecurityEnabled;
     }
 
-    
+
     public function isGrantedToOperationResolve(Query $query): bool
     {
         return $this->authorizationChecker->isGranted(SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE, $query);
     }
 
-    
+
     public function isGrantedToFieldResolve(ResolveInfo $resolveInfo): bool
     {
         return $this->authorizationChecker->isGranted(SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE, $resolveInfo);
@@ -78,7 +78,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
      * @return mixed
      * @throw \Exception
      */
-    public function createNewFieldAccessDeniedException(ResolveInfo $resolveInfo): \Symfony\Component\Security\Core\Exception\AccessDeniedException
+    public function createNewFieldAccessDeniedException(ResolveInfo $resolveInfo): AccessDeniedException
     {
         return new AccessDeniedException();
     }
@@ -88,7 +88,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
      * @return mixed
      * @throw \Exception
      */
-    public function createNewOperationAccessDeniedException(Query $query): \Symfony\Component\Security\Core\Exception\AccessDeniedException
+    public function createNewOperationAccessDeniedException(Query $query): AccessDeniedException
     {
         return new AccessDeniedException();
     }

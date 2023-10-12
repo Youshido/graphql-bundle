@@ -1,6 +1,6 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\Execution;
+namespace Youshido\GraphQLBundle\Execution;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
@@ -17,8 +17,8 @@ use Youshido\GraphQL\Parser\Ast\Field as AstField;
 use Youshido\GraphQL\Parser\Ast\Interfaces\FieldInterface as AstFieldInterface;
 use Youshido\GraphQL\Parser\Ast\Query;
 use Youshido\GraphQL\Type\TypeService;
-use Youshido\GraphQLBundle\src\Event\ResolveEvent;
-use Youshido\GraphQLBundle\src\Security\Manager\SecurityManagerInterface;
+use Youshido\GraphQLBundle\Event\ResolveEvent;
+use Youshido\GraphQLBundle\Security\Manager\SecurityManagerInterface;
 
 class Processor extends BaseProcessor
 {
@@ -26,9 +26,9 @@ class Processor extends BaseProcessor
     /** @var  LoggerInterface */
     private $logger;
 
-    private ?\Youshido\GraphQLBundle\src\Security\Manager\SecurityManagerInterface $securityManager = null;
+    private ?SecurityManagerInterface $securityManager = null;
 
-    private readonly \Symfony\Component\EventDispatcher\EventDispatcherInterface $eventDispatcher;
+    private readonly EventDispatcherInterface $eventDispatcher;
 
     /**
      * Constructor.
@@ -56,6 +56,11 @@ class Processor extends BaseProcessor
         return parent::processPayload($payload, $variables);
     }
 
+    public function setLogger($logger = null): void
+    {
+        $this->logger = $logger;
+    }
+
     protected function resolveQuery(Query $query): array
     {
         $this->assertClientHasOperationAccess($query);
@@ -63,15 +68,12 @@ class Processor extends BaseProcessor
         return parent::resolveQuery($query);
     }
 
-    private function dispatchResolveEvent(ResolveEvent $event, string $name): void
+    private function assertClientHasOperationAccess(Query $query): void
     {
-        $major = Kernel::MAJOR_VERSION;
-        $minor = Kernel::MINOR_VERSION;
-
-        if ($major > 4 || ($major === 4 && $minor >= 3)) {
-            $this->eventDispatcher->dispatch($event, $name);
-        } else {
-            $this->eventDispatcher->dispatch($name, $event);
+        if ($this->securityManager->isSecurityEnabledFor(SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE)
+            && !$this->securityManager->isGrantedToOperationResolve($query)
+        ) {
+            throw $this->securityManager->createNewOperationAccessDeniedException($query);
         }
     }
 
@@ -87,7 +89,7 @@ class Processor extends BaseProcessor
         $resolveInfo = $this->createResolveInfo($field, $astFields);
         $this->assertClientHasFieldAccess($resolveInfo);
 
-        if (in_array(\Symfony\Component\DependencyInjection\ContainerAwareInterface::class, class_implements($field))) {
+        if (in_array(ContainerAwareInterface::class, class_implements($field))) {
             /** @var $field ContainerAwareInterface */
             $field->setContainer($this->executionContext->getContainer()->getSymfonyContainer());
         }
@@ -121,12 +123,15 @@ class Processor extends BaseProcessor
         return $event->getResolvedValue();
     }
 
-    private function assertClientHasOperationAccess(Query $query): void
+    private function dispatchResolveEvent(ResolveEvent $event, string $name): void
     {
-        if ($this->securityManager->isSecurityEnabledFor(SecurityManagerInterface::RESOLVE_ROOT_OPERATION_ATTRIBUTE)
-            && !$this->securityManager->isGrantedToOperationResolve($query)
-        ) {
-            throw $this->securityManager->createNewOperationAccessDeniedException($query);
+        $major = Kernel::MAJOR_VERSION;
+        $minor = Kernel::MINOR_VERSION;
+
+        if ($major > 4 || ($major === 4 && $minor >= 3)) {
+            $this->eventDispatcher->dispatch($event, $name);
+        } else {
+            $this->eventDispatcher->dispatch($name);
         }
     }
 
@@ -139,14 +144,8 @@ class Processor extends BaseProcessor
         }
     }
 
-
     private function isServiceReference($resolveFunc): bool
     {
         return is_array($resolveFunc) && count($resolveFunc) == 2 && strpos((string)$resolveFunc[0], '@') === 0;
-    }
-
-    public function setLogger($logger = null): void
-    {
-        $this->logger = $logger;
     }
 }

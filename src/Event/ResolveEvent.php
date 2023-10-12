@@ -1,6 +1,6 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\Event;
+namespace Youshido\GraphQLBundle\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Youshido\GraphQL\Field\FieldInterface;
@@ -11,12 +11,12 @@ class ResolveEvent extends GenericEvent
     /**
      * @var Field
      */
-    private readonly \Youshido\GraphQL\Field\FieldInterface $field;
+    private readonly FieldInterface $field;
 
     private readonly array $astFields;
 
     /** @var mixed|null */
-    private $resolvedValue;
+    private mixed $resolvedValue;
 
     /**
      * Constructor.

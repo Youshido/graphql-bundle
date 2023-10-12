@@ -5,7 +5,7 @@
  * @author Portey Vasil <portey@gmail.com>
  */
 
-namespace Youshido\GraphQLBundle\src\Controller;
+namespace Youshido\GraphQLBundle\Controller;
 
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,8 +13,8 @@ use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use UnitEnum;
-use Youshido\GraphQLBundle\src\Exception\UnableToInitializeSchemaServiceException;
-use Youshido\GraphQLBundle\src\Execution\Processor;
+use Youshido\GraphQLBundle\Exception\UnableToInitializeSchemaServiceException;
+use Youshido\GraphQLBundle\Execution\Processor;
 
 class GraphQLController extends AbstractController
 {
@@ -58,18 +58,76 @@ class GraphQLController extends AbstractController
         return $response;
     }
 
+    /**
+     * @throws Exception
+     */
+    private function initializeSchemaService(): void
+    {
+        if ($this->container->initialized('graphql.schema')) {
+            return;
+        }
+
+        $this->container->set('graphql.schema', $this->makeSchemaService());
+    }
+
+    /**
+     * @return ContainerAwareInterface
+     *
+     * @throws UnableToInitializeSchemaServiceException
+     */
+    private function makeSchemaService(): ContainerAwareInterface
+    {
+        if ($this->container->has($this->getSchemaService())) {
+            return $this->container->get($this->getSchemaService());
+        }
+
+        $schemaClass = $this->getSchemaClass();
+        if (!$schemaClass || !class_exists($schemaClass)) {
+            throw new UnableToInitializeSchemaServiceException();
+        }
+
+        if ($this->container->has($schemaClass)) {
+            return $this->container->get($schemaClass);
+        }
+
+        $schema = new $schemaClass();
+        if ($schema instanceof ContainerAwareInterface) {
+            $schema->setContainer($this->container);
+        }
+
+        return $schema;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSchemaService(): string
+    {
+        $serviceName = $this->getParameter('graphql.schema_service');
+
+        if (str_starts_with((string)$serviceName, '@')) {
+            return substr((string)$serviceName, 1, strlen((string)$serviceName) - 1);
+        }
+
+        return $serviceName;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSchemaClass(): string
+    {
+        return $this->getParameter('graphql.schema_class');
+    }
+
+    private function getResponseHeaders(): UnitEnum|float|int|bool|array|string|null
+    {
+        return $this->getParameter('graphql.response.headers');
+    }
+
     private function createEmptyResponse(): JsonResponse
     {
         return new JsonResponse([], 200, $this->getResponseHeaders());
-    }
-
-    private function executeQuery($query, $variables): array
-    {
-        /** @var Processor $processor */
-        $processor = $this->container->get('graphql.processor');
-        $processor->processPayload($query, $variables);
-
-        return $processor->getResponseData();
     }
 
     /**
@@ -135,70 +193,12 @@ class GraphQLController extends AbstractController
         return [$queries, $isMultiQueryRequest];
     }
 
-    /**
-     * @throws Exception
-     */
-    private function initializeSchemaService(): void
+    private function executeQuery($query, $variables): array
     {
-        if ($this->container->initialized('graphql.schema')) {
-            return;
-        }
+        /** @var Processor $processor */
+        $processor = $this->container->get('graphql.processor');
+        $processor->processPayload($query, $variables);
 
-        $this->container->set('graphql.schema', $this->makeSchemaService());
-    }
-
-    /**
-     * @return ContainerAwareInterface
-     *
-     * @throws UnableToInitializeSchemaServiceException
-     */
-    private function makeSchemaService(): ContainerAwareInterface
-    {
-        if ($this->container->has($this->getSchemaService())) {
-            return $this->container->get($this->getSchemaService());
-        }
-
-        $schemaClass = $this->getSchemaClass();
-        if (!$schemaClass || !class_exists($schemaClass)) {
-            throw new UnableToInitializeSchemaServiceException();
-        }
-
-        if ($this->container->has($schemaClass)) {
-            return $this->container->get($schemaClass);
-        }
-
-        $schema = new $schemaClass();
-        if ($schema instanceof ContainerAwareInterface) {
-            $schema->setContainer($this->container);
-        }
-
-        return $schema;
-    }
-
-    /**
-     * @return string
-     */
-    private function getSchemaClass(): string
-    {
-        return $this->getParameter('graphql.schema_class');
-    }
-
-    /**
-     * @return string
-     */
-    private function getSchemaService(): string
-    {
-        $serviceName = $this->getParameter('graphql.schema_service');
-
-        if (str_starts_with((string)$serviceName, '@')) {
-            return substr((string)$serviceName, 1, strlen((string)$serviceName) - 1);
-        }
-
-        return $serviceName;
-    }
-
-    private function getResponseHeaders(): UnitEnum|float|int|bool|array|string|null
-    {
-        return $this->getParameter('graphql.response.headers');
+        return $processor->getResponseData();
     }
 }

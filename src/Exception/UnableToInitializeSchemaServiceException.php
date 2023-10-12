@@ -1,6 +1,6 @@
 <?php
 
-namespace Youshido\GraphQLBundle\src\Exception;
+namespace Youshido\GraphQLBundle\Exception;
 
 use Exception;
 
