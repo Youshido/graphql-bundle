@@ -21,15 +21,8 @@
       "Youshido\\GraphQLBundle\\": ""
     }
   },
-  "repositories": [
-    {
-      "url": "https://github.com/TomAtomCZ/GraphQL.git",
-      "type": "vcs"
-    }
-  ],
   "require": {
     "php": ">=8.1",
-    "youshido/graphql": "dev-master",
     "symfony/security-bundle": "^6.3"
   },
   "require-dev": {
