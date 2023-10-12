@@ -6,10 +6,8 @@
 
     <parameters>
         <parameter key="graphql.processor.class">Youshido\GraphQLBundle\Execution\Processor</parameter>
-        <parameter key="graphql.execution_context.class">Youshido\GraphQLBundle\Execution\Context\ExecutionContext
-        </parameter>
-        <parameter key="graphql.security_manager.class">Youshido\GraphQLBundle\Security\Manager\DefaultSecurityManager
-        </parameter>
+        <parameter key="graphql.execution_context.class">Youshido\GraphQLBundle\Execution\Context\ExecutionContext</parameter>
+        <parameter key="graphql.security_manager.class">Youshido\GraphQLBundle\Security\Manager\DefaultSecurityManager</parameter>
     </parameters>
 
     <services>
