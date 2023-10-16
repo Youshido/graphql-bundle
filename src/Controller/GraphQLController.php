@@ -10,6 +10,7 @@ namespace Youshido\GraphQLBundle\Controller;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use UnitEnum;
@@ -19,6 +20,18 @@ use Youshido\GraphQLBundle\Execution\Processor;
 class GraphQLController extends AbstractController
 {
     public $container;
+
+    protected ParameterBag $parameterBag;
+
+    public function __construct(ParameterBag $parameterBag)
+    {
+        $this->parameterBag = $parameterBag;
+    }
+
+    protected function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null
+    {
+        return $this->parameterBag->get($name);
+    }
 
     /**
      * @Route("/graphql")
@@ -71,13 +84,11 @@ class GraphQLController extends AbstractController
     }
 
     /**
-     * @return ContainerAwareInterface
-     *
      * @throws UnableToInitializeSchemaServiceException
      */
-    private function makeSchemaService(): ContainerAwareInterface
+    private function makeSchemaService()
     {
-        if ($this->container->has($this->getSchemaService())) {
+        if ($this->getSchemaService() && $this->container->has($this->getSchemaService())) {
             return $this->container->get($this->getSchemaService());
         }
 
@@ -99,9 +110,9 @@ class GraphQLController extends AbstractController
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    private function getSchemaService(): string
+    private function getSchemaService(): ?string
     {
         $serviceName = $this->getParameter('graphql.schema_service');
 
