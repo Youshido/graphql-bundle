@@ -1,6 +1,14 @@
-<!DOCTYPE html>
-<html>
+<!--
+ *  Copyright (c) 2021 GraphQL Contributors
+ *  All rights reserved.
+ *
+ *  This source code is licensed under the license found in the
+ *  LICENSE file in the root directory of this source tree.
+-->
+<!doctype html>
+<html lang="en">
 <head>
+    <title>GraphiQL</title>
     <style>
         body {
             height: 100%;
@@ -12,187 +20,73 @@
         #graphiql {
             height: 100vh;
         }
-
-        .token-button {
-            position: absolute;
-            left: 250px;
-            top: 12px;
-            background: -webkit-linear-gradient(#fbfbfb, #f8f8f8);
-            background: linear-gradient(#fbfbfb, #f8f8f8);
-            border-width: 1px;
-            border-style: solid;
-            border-color: #d3d3d3 #d0d0d0 #bababa;
-            border-radius: 4px;
-            box-shadow: 0 1px 1px -1px rgba(0, 0, 0, 0.13), inset 0 1px #fff;
-            color: #444;
-            cursor: pointer;
-            display: inline-block;
-            margin: 0 5px 0;
-            padding: 2px 8px 4px;
-            text-decoration: none;
-            height: 26px;
-            font-family: system, -apple-system, 'San Francisco', '.SFNSDisplay-Regular', 'Segoe UI', Segoe, 'Segoe WP', 'Helvetica Neue', helvetica, 'Lucida Grande', arial, sans-serif;
-            font-size: 14px;
-        }
-
-        #token-input {
-            display: none;
-            position: absolute;
-            left: 250px;
-            top: 12px;
-            width: 350px;
-            font-size: 13px;
-            line-height: 20px;
-            height: 20px;
-            padding: 2px 10px;
-            border: 1px solid #ccc;
-            border-radius: 2px;
-        }
     </style>
+    <!--
+      This GraphiQL example depends on Promise and fetch, which are available in
+      modern browsers, but can be "polyfilled" for older browsers.
+      GraphiQL itself depends on React DOM.
+      If you do not want to rely on a CDN, you can host these files locally or
+      include them directly in your favored resource bundler.
+    -->
+    <script
+            crossorigin
+            src="https://unpkg.com/react@18/umd/react.development.js"
+    ></script>
+    <script
+            crossorigin
+            src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"
+    ></script>
 
-    <link rel="stylesheet" href="{{ asset('bundles/graphql/graphiql.css') }}"/>
+    {# <script src="{{ asset('react/react.development.js') }}"></script> #}
+    {# <script src="{{ asset('react/react-dom.development.js') }}"></script> #}
 
-    <script src="{{ asset('bundles/graphql/react/react-15.0.1.min.js') }}"></script>
-    <script src="{{ asset('bundles/graphql/react/react-dom-15.0.1.min.js') }}"></script>
-    <script src="{{ asset('bundles/graphql/react/fetch.min.js') }}"></script>
+    <!--
+      These two files can be found in the npm module, however you may wish to
+      copy them directly into your environment, or perhaps include them in your
+      favored resource bundler.
+     -->
+    <script
+            src="https://unpkg.com/graphiql/graphiql.min.js"
+            type="application/javascript"
+    ></script>
+    <link rel="stylesheet" href="https://unpkg.com/graphiql/graphiql.min.css"/>
 
-    <script src="{{ asset('bundles/graphql/graphiql.min.js') }}"></script>
+    {# <script src="{{ asset('graphiql.min.js') }}"></script> #}
+    {# <link rel="stylesheet" href="{{ asset('graphiql.min.css') }}"/> #}
+
+    <!--
+      These are imports for the GraphIQL Explorer plugin.
+     -->
+    <script
+            src="https://unpkg.com/@graphiql/plugin-explorer/dist/index.umd.js"
+            crossorigin
+    ></script>
+
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/@graphiql/plugin-explorer/dist/style.css"
+    />
+
+    {# <script src="{{ asset('index.umd.js') }}"></script> #}
+    {# <link rel="stylesheet" href="{{ asset('style.css') }}"/> #}
 </head>
+
 <body>
-<button class="token-button">Enter Token</button>
-<input type="text" placeholder="AccessToken" id="token-input">
 <div id="graphiql">Loading...</div>
 <script>
-
-    /**
-     * This GraphiQL example illustrates how to use some of GraphiQL's props
-     * in order to enable reading and updating the URL parameters, making
-     * link sharing of queries a little bit easier.
-     *
-     * This is only one example of this kind of feature, GraphiQL exposes
-     * various React params to enable interesting integrations.
-     */
-
-        // Parse the search string to get url parameters.
-    var search = window.location.search;
-    var parameters = {};
-    search.substr(1).split('&').forEach(function (entry) {
-        var eq = entry.indexOf('=');
-        if (eq >= 0) {
-            parameters[decodeURIComponent(entry.slice(0, eq))] =
-                decodeURIComponent(entry.slice(eq + 1));
-        }
+    const root = ReactDOM.createRoot(document.getElementById('graphiql'));
+    const fetcher = GraphiQL.createFetcher({
+        url: 'https://swapi-graphql.netlify.app/.netlify/functions/index',
+        headers: {'X-Example-Header': 'foo'},
     });
-
-    // if variables was provided, try to format it.
-    if (parameters.variables) {
-        try {
-            parameters.variables =
-                JSON.stringify(JSON.parse(parameters.variables), null, 2);
-        } catch (e) {
-            // Do nothing, we want to display the invalid JSON as a string, rather
-            // than present an error.
-        }
-    }
-
-    // When the query and variables string is edited, update the URL bar so
-    // that it can be easily shared
-    function onEditQuery(newQuery) {
-        parameters.query = newQuery;
-        updateURL();
-    }
-
-    function onEditVariables(newVariables) {
-        parameters.variables = newVariables;
-        updateURL();
-    }
-
-    function onEditOperationName(newOperationName) {
-        parameters.operationName = newOperationName;
-        updateURL();
-    }
-
-    function updateURL() {
-        var newSearch = '?' + Object.keys(parameters).filter(function (key) {
-            return Boolean(parameters[key]);
-        }).map(function (key) {
-            return encodeURIComponent(key) + '=' +
-                encodeURIComponent(parameters[key]);
-        }).join('&');
-        history.replaceState(null, null, newSearch);
-    }
-
-    function getCookie(name) {
-        var value = "; " + document.cookie;
-        var parts = value.split("; " + name + "=");
-        if (parts.length == 2) return parts.pop().split(";").shift();
-    }
-
-    // Defines a GraphQL fetcher using the fetch API.
-    function graphQLFetcher(graphQLParams) {
-        var headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        };
-        if (window.tokenInput) {
-            headers['{{ tokenHeader }}'] = tokenInput.value;
-        }
-
-        var cookie = getCookie('XSRF-TOKEN');
-
-        if (cookie != undefined) {
-            headers['X-XSRF-TOKEN'] = cookie;
-        }
-
-        return fetch("{{ graphQLUrl }}", {
-            method: 'post',
-            headers: headers,
-            body: JSON.stringify(graphQLParams),
-            credentials: 'include'
-        }).then(function (response) {
-            return response.text();
-        }).then(function (responseBody) {
-            try {
-                return JSON.parse(responseBody);
-            } catch (error) {
-                return responseBody;
-            }
-        });
-    }
-
-    // Render <GraphiQL /> into the body.
-    ReactDOM.render(
+    const explorerPlugin = GraphiQLPluginExplorer.explorerPlugin();
+    root.render(
         React.createElement(GraphiQL, {
-            fetcher: graphQLFetcher,
-            query: parameters.query,
-            variables: parameters.variables,
-            operationName: parameters.operationName,
-            onEditQuery: onEditQuery,
-            onEditVariables: onEditVariables,
-            onEditOperationName: onEditOperationName
+            fetcher,
+            defaultEditorToolsVisibility: true,
+            plugins: [explorerPlugin],
         }),
-        document.getElementById('graphiql')
     );
-
-</script>
-<script>
-    var button = document.querySelector('.token-button');
-    var tokenInput = document.querySelector('#token-input');
-    button.addEventListener('click', function () {
-        button.style.display = 'none';
-        tokenInput.style.display = 'inline-block';
-    });
-    tokenInput.addEventListener('change', function () {
-        if (window.localStorage) {
-            window.localStorage.setItem('api-token', tokenInput.value);
-        }
-    });
-    if (window.localStorage) {
-        var tokenValue = window.localStorage.getItem('api-token');
-        if (tokenValue) {
-            tokenInput.value = tokenValue;
-        }
-    }
 </script>
 </body>
 </html>
