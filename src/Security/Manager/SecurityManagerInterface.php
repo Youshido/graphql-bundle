@@ -22,7 +22,7 @@ interface SecurityManagerInterface
      *
      * @return bool
      */
-    public function isSecurityEnabledFor($attribute): bool;
+    public function isSecurityEnabledFor(string $attribute): bool;
 
     /**
      * @param ResolveInfo $resolveInfo

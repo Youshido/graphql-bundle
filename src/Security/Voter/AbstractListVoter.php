@@ -23,7 +23,7 @@ abstract class AbstractListVoter extends Voter
     /**
      * @return string[]
      */
-    public function getList()
+    public function getList(): array
     {
         return $this->list;
     }

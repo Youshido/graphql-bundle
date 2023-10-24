@@ -25,8 +25,8 @@ class DefaultSecurityManager implements SecurityManagerInterface
     public function __construct(AuthorizationCheckerInterface $authorizationChecker, array $guardConfig = [])
     {
         $this->authorizationChecker = $authorizationChecker;
-        $this->fieldSecurityEnabled = isset($guardConfig['field']) ? $guardConfig['field'] : false;
-        $this->rootOperationSecurityEnabled = isset($guardConfig['operation']) ? $guardConfig['operation'] : false;
+        $this->fieldSecurityEnabled = $guardConfig['field'] ?? false;
+        $this->rootOperationSecurityEnabled = $guardConfig['operation'] ?? false;
     }
 
     /**
@@ -34,7 +34,7 @@ class DefaultSecurityManager implements SecurityManagerInterface
      *
      * @return bool
      */
-    public function isSecurityEnabledFor($attribute): bool
+    public function isSecurityEnabledFor(string $attribute): bool
     {
         if (SecurityManagerInterface::RESOLVE_FIELD_ATTRIBUTE == $attribute) {
             return $this->fieldSecurityEnabled;

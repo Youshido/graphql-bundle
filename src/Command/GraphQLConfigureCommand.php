@@ -35,6 +35,7 @@ class GraphQLConfigureCommand extends Command
 
     /**
      * {@inheritdoc}
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {

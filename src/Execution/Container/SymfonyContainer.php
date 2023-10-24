@@ -8,10 +8,10 @@
 
 namespace Youshido\GraphQLBundle\Execution\Container;
 
-
 use RuntimeException;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
+use UnitEnum;
 use Youshido\GraphQL\Execution\Container\ContainerInterface;
 
 class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
@@ -39,7 +39,7 @@ class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
         return $this->container->has($id);
     }
 
-    public function initialized($id)
+    public function initialized($id): bool
     {
         return $this->container->initialized($id);
     }
@@ -50,23 +50,22 @@ class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
         return $this;
     }
 
-    public function getParameter($name)
+    public function getParameter($name): UnitEnum|float|int|bool|array|string|null
     {
         return $this->container->getParameter($name);
     }
 
-    public function hasParameter($name)
+    public function hasParameter($name): bool
     {
         return $this->container->hasParameter($name);
     }
 
     /**
      * Exists temporarily for ContainerAwareField that is to be removed in 1.5
-     * @return mixed
+     * @return \Symfony\Component\DependencyInjection\ContainerInterface|null
      */
-    public function getSymfonyContainer()
+    public function getSymfonyContainer(): ?\Symfony\Component\DependencyInjection\ContainerInterface
     {
         return $this->container;
     }
-
 }

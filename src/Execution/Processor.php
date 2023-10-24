@@ -22,9 +22,7 @@ use Youshido\GraphQLBundle\Security\Manager\SecurityManagerInterface;
 
 class Processor extends BaseProcessor
 {
-
-    /** @var  LoggerInterface */
-    private $logger;
+    private LoggerInterface $logger;
 
     private ?SecurityManagerInterface $securityManager = null;
 
@@ -77,6 +75,9 @@ class Processor extends BaseProcessor
         }
     }
 
+    /**
+     * @throws ResolveException
+     */
     protected function doResolve(FieldInterface $field, AstFieldInterface $ast, $parentValue = null)
     {
         /** @var Query|AstField $ast */
@@ -146,6 +147,6 @@ class Processor extends BaseProcessor
 
     private function isServiceReference($resolveFunc): bool
     {
-        return is_array($resolveFunc) && count($resolveFunc) == 2 && strpos((string)$resolveFunc[0], '@') === 0;
+        return is_array($resolveFunc) && count($resolveFunc) == 2 && str_starts_with((string)$resolveFunc[0], '@');
     }
 }

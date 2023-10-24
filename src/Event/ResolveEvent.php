@@ -4,18 +4,13 @@ namespace Youshido\GraphQLBundle\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 use Youshido\GraphQL\Field\FieldInterface;
-use Youshido\GraphQL\Parser\Ast\Field;
 
 class ResolveEvent extends GenericEvent
 {
-    /**
-     * @var Field
-     */
     private readonly FieldInterface $field;
 
     private readonly array $astFields;
 
-    /** @var mixed|null */
     private mixed $resolvedValue;
 
     /**
@@ -23,7 +18,7 @@ class ResolveEvent extends GenericEvent
      *
      * @param mixed|null $resolvedValue
      */
-    public function __construct(FieldInterface $field, array $astFields, $resolvedValue = null)
+    public function __construct(FieldInterface $field, array $astFields, mixed $resolvedValue = null)
     {
         $this->field = $field;
         $this->astFields = $astFields;
@@ -36,7 +31,7 @@ class ResolveEvent extends GenericEvent
      *
      * @return FieldInterface
      */
-    public function getField()
+    public function getField(): FieldInterface
     {
         return $this->field;
     }
@@ -46,7 +41,7 @@ class ResolveEvent extends GenericEvent
      *
      * @return array
      */
-    public function getAstFields()
+    public function getAstFields(): array
     {
         return $this->astFields;
     }
@@ -56,7 +51,7 @@ class ResolveEvent extends GenericEvent
      *
      * @return mixed|null
      */
-    public function getResolvedValue()
+    public function getResolvedValue(): mixed
     {
         return $this->resolvedValue;
     }
@@ -71,4 +66,3 @@ class ResolveEvent extends GenericEvent
         $this->resolvedValue = $resolvedValue;
     }
 }
-

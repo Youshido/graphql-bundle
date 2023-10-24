@@ -28,7 +28,7 @@ class GraphQLController extends AbstractController
         $this->parameterBag = $parameterBag;
     }
 
-    protected function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null
+    protected function getParameter(string $name): array|bool|string|int|float|UnitEnum|null
     {
         return $this->parameterBag->get($name);
     }
