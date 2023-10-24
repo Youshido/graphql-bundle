@@ -22,11 +22,11 @@ use Youshido\GraphQLBundle\Security\Manager\SecurityManagerInterface;
 
 class Processor extends BaseProcessor
 {
-    private LoggerInterface $logger;
+    private ?LoggerInterface $logger = null;
 
     private ?SecurityManagerInterface $securityManager = null;
 
-    private readonly EventDispatcherInterface $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     /**
      * Constructor.
