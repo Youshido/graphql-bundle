@@ -13,8 +13,7 @@ use Youshido\GraphQL\Validator\ConfigValidator\Rules\TypeValidationRule as BaseT
 
 class TypeValidationRule extends BaseTypeValidationRule
 {
-
-    public function validate($data, $ruleInfo)
+    public function validate($data, $ruleInfo): bool
     {
         if (!is_string($ruleInfo)) {
             return false;
@@ -22,13 +21,11 @@ class TypeValidationRule extends BaseTypeValidationRule
 
         if (($ruleInfo == TypeService::TYPE_CALLABLE) && (
                 is_callable($data) ||
-                (is_array($data) && count($data) == 2 && substr((string)$data[0], 0, 1) == '@'))
+                (is_array($data) && count($data) == 2 && str_starts_with((string)$data[0], '@')))
         ) {
             return true;
         }
 
         return parent::validate($data, $ruleInfo);
     }
-
-
 }
