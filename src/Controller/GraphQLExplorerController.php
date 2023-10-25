@@ -24,7 +24,7 @@ class GraphQLExplorerController extends AbstractController
     {
         $response = $this->render('@GraphQLBundle/feature/explorer.html.twig', [
             'graphQLUrl' => $this->generateUrl('youshido_graphql_graphql_default'),
-            'tokenHeader' => 'access-token'
+            'tokenHeader' => 'Authorization'
         ]);
 
         $date = DateTime::createFromFormat('U', strtotime('tomorrow'), new DateTimeZone('UTC'));
