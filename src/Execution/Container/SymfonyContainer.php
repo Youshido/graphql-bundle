@@ -9,14 +9,22 @@
 namespace Youshido\GraphQLBundle\Execution\Container;
 
 use RuntimeException;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use UnitEnum;
 use Youshido\GraphQL\Execution\Container\ContainerInterface;
+use function func_num_args;
 
-class SymfonyContainer implements ContainerInterface, ContainerAwareInterface
+class SymfonyContainer implements ContainerInterface
 {
-    use ContainerAwareTrait;
+    protected \Symfony\Component\DependencyInjection\ContainerInterface $container;
+
+    public function setContainer(\Symfony\Component\DependencyInjection\ContainerInterface $container = null): void
+    {
+        if (1 > func_num_args()) {
+            trigger_deprecation('symfony/dependency-injection', '6.2', 'Calling "%s::%s()" without any arguments is deprecated, pass null explicitly instead.', __CLASS__, __FUNCTION__);
+        }
+
+        $this->container = $container;
+    }
 
     public function get($id)
     {
