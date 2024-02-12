@@ -34,13 +34,12 @@ class GraphQLController extends AbstractController
     }
 
     /**
-     * @Route("/graphql")
-     *
      * @return JsonResponse
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      * @throws Exception
      */
+    #[Route(path: '/graphql', name: 'youshido_graphql_default')]
     public function defaultAction(): JsonResponse
     {
         try {

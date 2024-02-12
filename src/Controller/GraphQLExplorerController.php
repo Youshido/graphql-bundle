@@ -16,14 +16,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class GraphQLExplorerController extends AbstractController
 {
     /**
-     * @Route("/graphql/explorer")
-     *
      * @return Response
      */
+    #[Route(path: '/graphql/explorer', name: 'youshido_graphql_explorer')]
     public function explorerAction(): Response
     {
         $response = $this->render('@GraphQLBundle/feature/explorer.html.twig', [
-            'graphQLUrl' => $this->generateUrl('youshido_graphql_graphql_default'),
+            'graphQLUrl' => $this->generateUrl('youshido_graphql_default'),
             'tokenHeader' => 'Authorization'
         ]);
 

@@ -4,11 +4,11 @@
         xsi:schemaLocation="http://symfony.com/schema/routing
         http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="youshido_graphql_graphql_default" path="/graphql">
+    <route id="youshido_graphql_default" path="/graphql">
         <default key="_controller">Youshido\GraphQLBundle\Controller\GraphQLController::defaultAction</default>
     </route>
 
-    <route id="youshido_graphql_graphqlexplorer_explorer" path="/graphql/explorer">
+    <route id="youshido_graphql_explorer" path="/graphql/explorer">
         <default key="_controller">Youshido\GraphQLBundle\Controller\GraphQLExplorerController::explorerAction</default>
     </route>
 </routes>
