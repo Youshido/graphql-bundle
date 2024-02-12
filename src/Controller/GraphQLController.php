@@ -8,6 +8,8 @@
 namespace Youshido\GraphQLBundle\Controller;
 
 use Exception;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
@@ -19,8 +21,6 @@ use Youshido\GraphQLBundle\Execution\Processor;
 
 class GraphQLController extends AbstractController
 {
-    public $container;
-
     protected ParameterBag $parameterBag;
 
     public function __construct(ParameterBag $parameterBag)
@@ -37,8 +37,9 @@ class GraphQLController extends AbstractController
      * @Route("/graphql")
      *
      * @return JsonResponse
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      * @throws Exception
-     *
      */
     public function defaultAction(): JsonResponse
     {
@@ -72,7 +73,9 @@ class GraphQLController extends AbstractController
     }
 
     /**
-     * @throws Exception
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws UnableToInitializeSchemaServiceException
      */
     private function initializeSchemaService(): void
     {
@@ -84,9 +87,12 @@ class GraphQLController extends AbstractController
     }
 
     /**
+     * @return mixed|ContainerAwareInterface
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      * @throws UnableToInitializeSchemaServiceException
      */
-    private function makeSchemaService()
+    private function makeSchemaService(): mixed
     {
         if ($this->getSchemaService() && $this->container->has($this->getSchemaService())) {
             return $this->container->get($this->getSchemaService());
@@ -144,7 +150,8 @@ class GraphQLController extends AbstractController
     /**
      * @return array
      *
-     * @throws Exception
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
     private function getPayload(): array
     {
@@ -204,6 +211,10 @@ class GraphQLController extends AbstractController
         return [$queries, $isMultiQueryRequest];
     }
 
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
     private function executeQuery($query, $variables): array
     {
         /** @var Processor $processor */
