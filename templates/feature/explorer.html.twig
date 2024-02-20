@@ -72,6 +72,10 @@
 </head>
 
 <body>
+<div class="access-token">
+    <label for="token-input" id="token-button">Enter token</label>
+    <input type="text" placeholder="AccessToken" id="token-input" value="{{ accessToken }}">
+</div>
 <div id="graphiql">Loading...</div>
 <script>
     const root = ReactDOM.createRoot(document.getElementById('graphiql'));
