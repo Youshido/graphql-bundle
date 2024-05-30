@@ -7,7 +7,7 @@
 
 namespace Youshido\GraphQLBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,7 +15,7 @@ use Youshido\GraphQL\Exception\ConfigurationException;
 use Youshido\GraphQLBundle\Exception\UnableToInitializeSchemaServiceException;
 use Youshido\GraphQLBundle\Execution\Processor;
 
-class GraphQLController extends Controller
+class GraphQLController extends AbstractController
 {
     /**
      * @Route("/graphql")

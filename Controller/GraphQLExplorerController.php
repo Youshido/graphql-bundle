@@ -9,9 +9,9 @@ namespace Youshido\GraphQLBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class GraphQLExplorerController extends Controller
+class GraphQLExplorerController extends AbstractController
 {
     /**
      * @Route("/graphql/explorer")
