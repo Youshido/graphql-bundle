@@ -18,8 +18,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode    = $treeBuilder->root('graphql');
+        $treeBuilder = new TreeBuilder('graphql');
+        $rootNode    = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()
