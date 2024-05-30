@@ -1,3 +1,7 @@
 /vendor/
 /.idea/
 composer.lock
+docker-compose.yml
+Dockerfile
+docker/
+.env.local
